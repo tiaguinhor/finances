@@ -44,11 +44,11 @@ export class DAOContas {
 		});
 	}
 
-	edit(conta){
+	edit(conta, successCallback){
 		let storage = new Storage(SqlStorage);
 
 		storage.query("UPDATE contas SET description = ? WHERE id = ?", [conta.description, conta.id]).then((data) =>{
-			console.log('Atualizou');
+			successCallback(conta);
 		}, (error) =>{
 			console.log('Erro: ' + JSON.stringify(error.err));
 		});

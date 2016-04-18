@@ -6,7 +6,7 @@ import {ContasPage} from './pages/contas/contas';
 
 @App({
   templateUrl: 'build/pages/menu.html',
-  config: {} // http://ionicframework.com/docs/v2/api/config/Config/
+  config: {mode: 'md'} // http://ionicframework.com/docs/v2/api/config/Config/
 })
 
 export class MyApp {
