@@ -67,4 +67,49 @@ export class DAOLancamentos {
 			console.log("Erro :" + JSON.stringify(error.err));
 		});
 	}
+
+	getSaldo(successCallback){
+		let storage = new Storage(SqlStorage);
+
+		storage.query(`
+			SELECT TOTAL(value) as saldo, action FROM lancamentos WHERE pay = 1 AND action = 'entrada'
+			UNION
+			SELECT TOTAL(value) as saldo, action FROM lancamentos WHERE pay = 1 AND action = 'saida'
+		`).then((data) =>{
+			for(var i = 0; i < data.res.rows.length; i++){
+				let saldo = 0;
+				let row = data.res.rows.item(i);
+
+				if(row.action == 'entrada')
+					saldo += row.saldo;
+				else
+					saldo -= row.saldo;
+
+				successCallback(saldo);
+			}
+		}, (error) =>{
+			console.log("Erro :" + JSON.stringify(error.err));
+		});
+	}
+
+	getListGroupByConta(dataInicio, dataFim, action, successCallback){
+		let storage = new Storage(SqlStorage);
+
+		storage.query("SELECT conta, TOTAL(value) as saldo FROM lancamentos WHERE data >= ? AND data <= ? AND action = ? AND pay = 1 GROUP BY conta", [dataInicio.getTime(), dataFim.getTime(), action]).then((data) =>{
+			let list = [];
+
+			for(var i = 0; i < data.res.rows.length; i++){
+				let row = data.res.rows.item(i);
+				let conta = {
+					conta: row.conta,
+					saldo: row.saldo,
+					percentual: 0
+				};
+
+				list.push(conta);
+			}
+
+			successCallback(list);
+		});
+	}
 }

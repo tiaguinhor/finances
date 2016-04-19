@@ -7,7 +7,7 @@
 </ion-navbar>
 
 <ion-content padding class="lancamentos">
-	<data-filter [startDate]="currentDate" (changeDate)="updateDate($event)"></data-filter>
+	<data-filter [startDate]="currentDate" (changeDate)="updateDate($event)" (clickMonth)="onClickMonth()"></data-filter>
 
 	<ion-list>
 		<ion-item-sliding *ngFor="#lancamento of listLancamentos">
@@ -35,8 +35,11 @@
 			</ion-item>
 
 			<ion-item-options>
+				<button (click)="changePaymentStatus(lancamento)">
+					<ion-icon name="cash"></ion-icon> {{paymentButtonText(lancamento)}}
+				</button>
 				<button danger (click)="remove(lancamento)">
-					<ion-icon name="trash"></ion-icon>
+					<ion-icon name="trash"></ion-icon> Excluir
 				</button>
 			</ion-item-options>
 		</ion-item-sliding>

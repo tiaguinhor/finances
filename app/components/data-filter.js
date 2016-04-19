@@ -6,7 +6,7 @@ import {DataUtil} from '../util/data-util';
 	selector: "data-filter",
 	directives: IONIC_DIRECTIVES,
 	inputs: ['startDate'],
-	outputs: ['changeDate'],
+	outputs: ['changeDate', 'clickMonth'],
 	template: `<ion-row>
 		<ion-col width-10>
 			<button favorite clear round (click)="previousMonth()">
@@ -15,7 +15,7 @@ import {DataUtil} from '../util/data-util';
 		</ion-col>
 
 		<ion-col width-80>
-			<h5 favorite text-center>{{mesSelecionado}}</h5>
+			<h5 favorite text-center (click)="_executeClickMonth()">{{mesSelecionado}}</h5>
 		</ion-col>
 
 		<ion-col width-10>
@@ -26,15 +26,16 @@ import {DataUtil} from '../util/data-util';
 	</ion-row>`
 })
 
-export class DataFilter{
+export class DataFilter {
 	constructor(){
 		this.changeDate = new EventEmitter();
+		this.clickMonth = new EventEmitter();
 	}
 
 	_updateMonth(){
 		let dataUtil = new DataUtil();
 		let ano = this.startDate.getFullYear();
-		this.mesSelecionado = dataUtil.getMonthName(this.startDate)+' - '+ano;
+		this.mesSelecionado = dataUtil.getMonthName(this.startDate) + ' - ' + ano;
 		this._executeChangeDate();
 	}
 
@@ -42,7 +43,15 @@ export class DataFilter{
 		this.changeDate.next(this.startDate);
 	}
 
+	_executeClickMonth(){
+		this.clickMonth.next();
+	}
+
 	ngOnInit(){
+		this._updateMonth();
+	}
+
+	ngOnChanges(changes){
 		this._updateMonth();
 	}
 

@@ -1,8 +1,9 @@
-import {Page, NavController, Modal, Alert} from 'ionic-angular';
+import {Page, NavController, Modal, Alert, Events} from 'ionic-angular';
 import {ModalLancamentosPage} from '../modal-lancamentos/modal-lancamentos';
 import {DAOLancamentos} from '../../dao/dao-lancamentos';
 import {DataUtil} from '../../util/data-util';
 import {DataFilter} from '../../components/data-filter';
+import {RelatorioPage} from '../relatorio/relatorio';
 
 @Page({
 	templateUrl: 'build/pages/lancamentos/lancamentos.html',
@@ -10,11 +11,12 @@ import {DataFilter} from '../../components/data-filter';
 })
 export class LancamentosPage {
 	static get parameters(){
-		return [[NavController]];
+		return [[NavController], [Events]];
 	}
 
-	constructor(nav){
+	constructor(nav, events){
 		this.nav = nav;
+		this.events = events;
 		this.currentDate = new Date();
 		this.dao = new DAOLancamentos();
 		this.getListLancamentos();
@@ -31,7 +33,9 @@ export class LancamentosPage {
 	}
 
 	updateDate(data){
+		this.currentDate = data;
 		this.getListLancamentos();
+		this.updateSaldo();
 	}
 
 	insert(){
@@ -40,7 +44,7 @@ export class LancamentosPage {
 		modal.onDismiss((data) =>{
 			if(data){
 				this.dao.insert(data, (list) =>{
-					this.listLancamentos.push(list);
+					this.updateDate(new Date(list));
 				})
 			}
 		});
@@ -54,7 +58,7 @@ export class LancamentosPage {
 		modal.onDismiss((data) =>{
 			if(data){
 				this.dao.edit(lancamento, (list) =>{
-					//
+					this.updateDate(new Date(list));
 				});
 			}
 		});
@@ -71,8 +75,7 @@ export class LancamentosPage {
 					text: "Sim",
 					handler: () =>{
 						this.dao.remove(lancamento, (list) =>{
-							let pos = this.listLancamentos.indexOf(list);
-							this.listLancamentos.splice(pos, 1);
+							this.updateDate(new Date(list));
 						});
 					}
 				},
@@ -96,5 +99,27 @@ export class LancamentosPage {
 
 	getAction(action){
 		return (action == 'entrada')
+	}
+
+	updateSaldo(){
+		this.dao.getSaldo((data) =>{
+			this.events.publish('saldo:updated', data);
+		});
+	}
+
+	paymentButtonText(lancamento){
+		return (lancamento.pay) ? "Reabrir" : "Pagar";
+	}
+	
+	changePaymentStatus(lancamento){
+		lancamento.pay = (lancamento.pay) ? 0 : 1;
+
+		this.dao.edit(lancamento, (data) =>{
+			this.updateDate(new Date(lancamento.date));
+		});
+	}
+
+	onClickMonth(){
+		this.nav.push(RelatorioPage, {parameter: this.currentDate});
 	}
 }
